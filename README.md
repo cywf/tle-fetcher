@@ -1,3 +1,4 @@
+[![Nightly TLE refresh](https://github.com/cywf/tle-fetcher/actions/workflows/fetch-tles.yml/badge.svg)](https://github.com/cywf/tle-fetcher/actions/workflows/fetch-tles.yml)
 # TLE Fetcher Utility
 
 This repository contains a robust terminal-based utility for fetching up-to-date Two-Line Element (TLE) data for satellites from publicly available sources. It supports multiple data providers—CelesTrak and Ivan’s TLE API by default, with optional fallback to Space-Track and N2YO when credentials are provided. The tool can fetch single IDs interactively or process a batch of IDs from a queue file, validating and caching results.
