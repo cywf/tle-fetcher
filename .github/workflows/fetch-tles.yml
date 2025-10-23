@@ -1,0 +1,64 @@
+name: Nightly TLE refresh
+on:
+  workflow_dispatch: {}
+  schedule:
+    - cron: '27 3 * * *'  # UTC
+permissions:
+  contents: write
+concurrency:
+  group: tles-nightly
+  cancel-in-progress: false
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Refresh TLEs (public sources only)
+        run: |
+          set -Eeuo pipefail
+          python tle_fetcher.py \
+            --ids-file ids.txt \
+            --source-order celestrak,ivan \
+            --timeout 12 --retries 3 \
+            --no-name \
+            -o "tles/{id}.tle" \
+            --quiet
+
+      - name: Refresh TLEs (Space-Track/N2YO fallback if configured)
+        if: ${{ secrets.SPACETRACK_USER != '' || secrets.N2YO_API_KEY != '' }}
+        env:
+          SPACETRACK_USER: ${{ secrets.SPACETRACK_USER }}
+          SPACETRACK_PASS: ${{ secrets.SPACETRACK_PASS }}
+          N2YO_API_KEY:    ${{ secrets.N2YO_API_KEY }}
+        run: |
+          set -Eeuo pipefail
+          echo "::add-mask::${SPACETRACK_USER}"
+          echo "::add-mask::${SPACETRACK_PASS}"
+          echo "::add-mask::${N2YO_API_KEY}"
+          python tle_fetcher.py \
+            --ids-file ids.txt \
+            --source-order spacetrack,celestrak,ivan,n2yo \
+            --verify 1 \
+            --timeout 12 --retries 3 \
+            --no-name \
+            -o "tles/{id}.tle" \
+            --quiet
+
+      - name: Commit changes
+        run: |
+          set -Eeuo pipefail
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add tles/*.tle || true
+          if ! git diff --cached --quiet; then
+            git commit -m "chore(tle): nightly refresh $(date -u +'%Y-%m-%dT%H:%M:%SZ')"
+            git push
+          else
+            echo "No updates."
