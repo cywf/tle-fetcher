@@ -32,7 +32,6 @@ jobs:
             --quiet
 
       - name: Refresh TLEs (Space-Track/N2YO fallback if configured)
-        if: ${{ secrets.SPACETRACK_USER != '' || secrets.N2YO_API_KEY != '' }}
         env:
           SPACETRACK_USER: ${{ secrets.SPACETRACK_USER }}
           SPACETRACK_PASS: ${{ secrets.SPACETRACK_PASS }}
@@ -42,14 +41,16 @@ jobs:
           echo "::add-mask::${SPACETRACK_USER}"
           echo "::add-mask::${SPACETRACK_PASS}"
           echo "::add-mask::${N2YO_API_KEY}"
-          python tle_fetcher.py \
-            --ids-file ids.txt \
-            --source-order spacetrack,celestrak,ivan,n2yo \
-            --verify 1 \
-            --timeout 12 --retries 3 \
-            --no-name \
-            -o "tles/{id}.tle" \
-            --quiet
+          if [ -n "${SPACETRACK_USER}" ] || [ -n "${N2YO_API_KEY}" ]; then
+            python tle_fetcher.py \
+              --ids-file ids.txt \
+              --source-order spacetrack,celestrak,ivan,n2yo \
+              --verify 1 \
+              --timeout 12 --retries 3 \
+              --no-name \
+              -o "tles/{id}.tle" \
+              --quiet
+          fi
 
       - name: Commit changes
         run: |
