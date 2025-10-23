@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>TLE Fetcher</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 40px; }
+    #result { margin-top: 20px; white-space: pre; }
+  </style>
+</head>
+<body>
+  <h1>TLE Fetcher</h1>
+  <p>Enter a NORAD catalog ID to fetch the latest Two-Line Element (TLE) data.</p>
+  <input type="text" id="catid" placeholder="NORAD ID">
+  <button id="fetchBtn">Fetch TLE</button>
+  <div id="result"></div>
+  <script>
+    document.getElementById('fetchBtn').addEventListener('click', async function() {
+      const id = document.getElementById('catid').value.trim();
+      const resultDiv = document.getElementById('result');
+      resultDiv.textContent = '';
+      if (!id) { resultDiv.textContent = 'Please enter a NORAD ID.'; return; }
+      try {
+        const resp = await fetch('https://tle.ivanstanojevic.me/satellite/' + encodeURIComponent(id));
+        if (!resp.ok) { throw new Error('Fetch failed: ' + resp.status); }
+        const data = await resp.json();
+        const text = `${data.name}\n${data.line1}\n${data.line2}`;
+        resultDiv.textContent = text;
+        // create download link
+        const blob = new Blob([text], { type: 'text/plain' });
+        const url = URL.createObjectURL(blob);
+        let link = document.getElementById('downloadLink');
+        if (!link) {
+          link = document.createElement('a');
+          link.id = 'downloadLink';
+          link.download = id + '.tle';
+          link.textContent = 'Download TLE';
+          link.style.display = 'block';
+          link.style.marginTop = '10px';
+          resultDiv.appendChild(link);
+        }
+        link.href = url;
+      } catch (err) {
+        resultDiv.textContent = 'Error: ' + err.message;
+      }
+    });
+  </script>
+</body>
+</html>
