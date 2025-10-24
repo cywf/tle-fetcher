@@ -1,0 +1,31 @@
+[build-system]
+requires = ["setuptools>=67", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "tle-fetcher"
+version = "0.1.0"
+description = "Offline-first TLE fetching and caching toolkit"
+readme = "README.md"
+authors = [{ name = "Ground Systems Team" }]
+requires-python = ">=3.9"
+classifiers = [
+  "Programming Language :: Python :: 3",
+  "License :: OSI Approved :: MIT License",
+  "Operating System :: OS Independent",
+]
+dependencies = []
+
+[project.optional-dependencies]
+native = ["maturin>=1.4"]
+
+[tool.setuptools.packages.find]
+include = ["tle_fetcher", "tle_fetcher.*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[tool.pyo3]
+# Placeholder table to allow future PyO3 configuration overrides.
+bindings = "pyo3"
+
