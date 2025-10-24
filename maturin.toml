@@ -1,0 +1,10 @@
+[project]
+name = "tle-fetcher"
+version = "0.1.0"
+requires-python = ">=3.9"
+
+[build]
+# Optional PyO3 hooks for future Rust extensions.
+module-name = "tle_fetcher._native"
+bindings = "pyo3"
+strip = false
