@@ -1,0 +1,58 @@
+name: Nightly smoke tests
+
+on:
+  schedule:
+    - cron: '30 4 * * *'
+  workflow_dispatch:
+
+concurrency:
+  group: nightly-smoke
+  cancel-in-progress: false
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+          cache-dependency-path: requirements-dev.txt
+
+      - name: Install tooling
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r requirements-dev.txt
+
+      - name: Seed cache with fixtures
+        run: |
+          set -Eeuo pipefail
+          cache_dir="${HOME}/.cache/tle-fetcher"
+          mkdir -p "${cache_dir}"
+          cp data/cache/*.tle "${cache_dir}/"
+
+      - name: Smoke fetch (single ID JSON)
+        run: |
+          set -Eeuo pipefail
+          python tle_fetcher.py 25544 --json --cache-ttl 31536000 --quiet > smoke-single.json
+
+      - name: Smoke fetch (batch ids file)
+        run: |
+          set -Eeuo pipefail
+          python -c "import pathlib; pathlib.Path('smoke-out').mkdir(parents=True, exist_ok=True)"
+          python tle_fetcher.py --ids-file data/cache/smoke_ids.txt --cache-ttl 31536000 \
+            --no-name --output "smoke-out/{id}.tle" --quiet
+
+      - name: Upload smoke artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: nightly-smoke
+          path: |
+            smoke-single.json
+            smoke-out
+          if-no-files-found: warn

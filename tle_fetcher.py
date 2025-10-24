@@ -24,7 +24,6 @@ from __future__ import annotations
 import argparse
 import dataclasses
 import datetime as dt
-import io
 import json
 import os
 import random
@@ -32,7 +31,7 @@ import sys
 import time
 import urllib.parse
 import urllib.request
-from typing import Dict, Iterable, List, Optional, Tuple
+from typing import Dict, List, Optional
 
 # ------------------------------- Utilities -------------------------------- #
 
@@ -316,7 +315,8 @@ def parse_args(argv: Optional[List[str]] = None) -> argparse.Namespace:
     parser.add_argument("ids", nargs="*", help="NORAD catalog IDs (one or more).")
     parser.add_argument("--source-order", default="spacetrack,celestrak,ivan,n2yo",
                         help="Comma-separated source priority.")
-   parser.add_argument("--ids-file", "-f", help="Path to file with NORAD IDs (one per line, '#' comments allowed).")
+    parser.add_argument("--ids-file", "-f",
+                        help="Path to file with NORAD IDs (one per line, '#' comments allowed).")
     parser.add_argument("--timeout", type=float, default=DEFAULT_TIMEOUT, help="HTTP timeout (seconds).")
     parser.add_argument("--retries", type=int, default=DEFAULT_RETRIES, help="HTTP retries per source.")
     parser.add_argument("--backoff", type=float, default=DEFAULT_BACKOFF, help="Base backoff (seconds).")
@@ -348,12 +348,13 @@ def save_tle(tle: TLE, path: str, three_line: bool) -> None:
         f.write(txt)
 
 def run_cli(ns: argparse.Namespace) -> int:
-   # Load queued IDs from file if provided
+    # Load queued IDs from file if provided
     if ns.ids_file:
         from pathlib import Path
-          p = Path(ns.ids_file)
+
+        p = Path(ns.ids_file)
         if not p.exists():
-             print(f"IDs file not found: {p}", file=sys.stderr)
+            print(f"IDs file not found: {p}", file=sys.stderr)
             return 2
         loaded = []
         for raw in p.read_text(encoding="utf-8").splitlines():
@@ -361,7 +362,7 @@ def run_cli(ns: argparse.Namespace) -> int:
             if line:
                 loaded.append(line)
         # merge + de-dup
-         ns.ids = list(dict.fromkeys([*ns.ids, *loaded]))
+        ns.ids = list(dict.fromkeys([*ns.ids, *loaded]))
 
     if not ns.ids:
         # Interactive fallback for parity with your original tool.

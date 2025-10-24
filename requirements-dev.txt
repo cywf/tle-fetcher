@@ -1,0 +1,4 @@
+maturin>=1.5
+mypy>=1.9
+pytest>=8.2
+ruff>=0.4
