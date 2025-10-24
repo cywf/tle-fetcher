@@ -5,9 +5,25 @@ This repository contains a robust terminal-based utility for fetching up-to-date
 
 ## Requirements
 
-- Python 3.x (tested with 3.8+).  
-- Internet access to reach the TLE sources.  
+- Python 3.9 or newer.
+- Internet access to reach the TLE sources.
+- Optional: a Rust toolchain if you would like to build the native extension for faster parsing.
 - Optional: valid credentials for Space-Track (`SPACETRACK_USER`/`SPACETRACK_PASS`) and/or N2YO (`N2YO_API_KEY`) if you wish to use those services.
+
+Install the project in editable mode for development:
+
+```
+pip install -e .[dev]
+```
+
+To compile the optional Rust backend (recommended for production use), install the `rust` extra which pulls in [maturin](https://www.maturin.rs/):
+
+```
+pip install -e .[dev,rust]
+maturin develop
+```
+
+If the Rust build is unavailable the package automatically falls back to the pure-Python implementation, so the CLI continues to work in constrained environments.
 
 ## Queueing and Batch Fetching
 

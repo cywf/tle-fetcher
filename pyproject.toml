@@ -1,0 +1,30 @@
+[build-system]
+requires = ["setuptools>=67", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "tle-fetcher"
+version = "0.1.0"
+description = "Robust multi-source TLE fetcher with optional Rust acceleration."
+readme = "README.md"
+authors = [{ name = "TLE Fetcher Maintainers" }]
+requires-python = ">=3.9"
+dependencies = []
+
+[project.optional-dependencies]
+dev = ["pytest>=7.4", "hypothesis>=6.92"]
+rust = ["maturin>=1.3"]
+
+[project.scripts]
+tle-fetcher = "tle_fetcher.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["tle_fetcher", "tle_fetcher.*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+filterwarnings = ["error"]
+
+[tool.maturin]
+bindings = "pyo3"
+module-name = "tle_fetcher.core._tle_core"
