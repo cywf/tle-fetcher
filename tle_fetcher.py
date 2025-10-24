@@ -312,23 +312,56 @@ def fetch_with_fallback(norad_id: str, sources: List[str],
 # --------------------------------- CLI ------------------------------------ #
 
 def parse_args(argv: Optional[List[str]] = None) -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="Reliable TLE fetcher with multi-source fallback.")
+    parser = argparse.ArgumentParser(
+        description="Reliable TLE fetcher with multi-source fallback."
+    )
     parser.add_argument("ids", nargs="*", help="NORAD catalog IDs (one or more).")
-    parser.add_argument("--source-order", default="spacetrack,celestrak,ivan,n2yo",
-                        help="Comma-separated source priority.")
-   parser.add_argument("--ids-file", "-f", help="Path to file with NORAD IDs (one per line, '#' comments allowed).")
-    parser.add_argument("--timeout", type=float, default=DEFAULT_TIMEOUT, help="HTTP timeout (seconds).")
-    parser.add_argument("--retries", type=int, default=DEFAULT_RETRIES, help="HTTP retries per source.")
-    parser.add_argument("--backoff", type=float, default=DEFAULT_BACKOFF, help="Base backoff (seconds).")
-    parser.add_argument("--cache-ttl", type=int, default=CACHE_TTL_SECS, help="Cache TTL in seconds.")
-    parser.add_argument("--verify", type=int, default=0,
-                        help="Fetch from up to N additional sources to cross-verify (0=off).")
-    parser.add_argument("--output", "-o", default="-",
-                        help="Output path or pattern. Use '-' for stdout. "
-                             "Pattern supports {id}, {name}, {epoch:%Y%m%d%H%M%S}.")
-    parser.add_argument("--json", action="store_true", help="Emit machine-readable JSON to stdout.")
-    parser.add_argument("--no-name", action="store_true", help="Save as 2-line TLE (omit name line).")
-    parser.add_argument("--quiet", "-q", action="store_true", help="Suppress extra logs.")
+    parser.add_argument(
+        "--source-order",
+        default="spacetrack,celestrak,ivan,n2yo",
+        help="Comma-separated source priority.",
+    )
+    parser.add_argument(
+        "--ids-file",
+        "-f",
+        help="Path to file with NORAD IDs (one per line, '#' comments allowed).",
+    )
+    parser.add_argument(
+        "--timeout", type=float, default=DEFAULT_TIMEOUT, help="HTTP timeout (seconds)."
+    )
+    parser.add_argument(
+        "--retries", type=int, default=DEFAULT_RETRIES, help="HTTP retries per source."
+    )
+    parser.add_argument(
+        "--backoff", type=float, default=DEFAULT_BACKOFF, help="Base backoff (seconds)."
+    )
+    parser.add_argument(
+        "--cache-ttl", type=int, default=CACHE_TTL_SECS, help="Cache TTL in seconds."
+    )
+    parser.add_argument(
+        "--verify",
+        type=int,
+        default=0,
+        help="Fetch from up to N additional sources to cross-verify (0=off).",
+    )
+    parser.add_argument(
+        "--output",
+        "-o",
+        default="-",
+        help=(
+            "Output path or pattern. Use '-' for stdout. Pattern supports {id}, {name}, "
+            "{epoch:%Y%m%d%H%M%S}."
+        ),
+    )
+    parser.add_argument(
+        "--json", action="store_true", help="Emit machine-readable JSON to stdout."
+    )
+    parser.add_argument(
+        "--no-name", action="store_true", help="Save as 2-line TLE (omit name line)."
+    )
+    parser.add_argument(
+        "--quiet", "-q", action="store_true", help="Suppress extra logs."
+    )
     return parser.parse_args(argv)
 
 def format_output_path(pattern: str, tle: TLE) -> str:
@@ -348,20 +381,21 @@ def save_tle(tle: TLE, path: str, three_line: bool) -> None:
         f.write(txt)
 
 def run_cli(ns: argparse.Namespace) -> int:
-   # Load queued IDs from file if provided
+    # Load queued IDs from file if provided
     if ns.ids_file:
         from pathlib import Path
-          p = Path(ns.ids_file)
+
+        p = Path(ns.ids_file)
         if not p.exists():
-             print(f"IDs file not found: {p}", file=sys.stderr)
+            print(f"IDs file not found: {p}", file=sys.stderr)
             return 2
-        loaded = []
+        loaded: List[str] = []
         for raw in p.read_text(encoding="utf-8").splitlines():
             line = raw.split("#", 1)[0].strip()
             if line:
                 loaded.append(line)
         # merge + de-dup
-         ns.ids = list(dict.fromkeys([*ns.ids, *loaded]))
+        ns.ids = list(dict.fromkeys([*ns.ids, *loaded]))
 
     if not ns.ids:
         # Interactive fallback for parity with your original tool.
@@ -414,8 +448,13 @@ def run_cli(ns: argparse.Namespace) -> int:
             print(f"ERROR[{sat_id}]: {e}", file=sys.stderr)
     return exit_code
 
-def main() -> None:
-    ns = parse_args()
+def main(argv: Optional[List[str]] = None) -> None:
+    args = list(sys.argv[1:] if argv is None else argv)
+    if args and args[0] == "db":
+        from tle_fetcher.cli import db as db_cli
+
+        sys.exit(db_cli.main(args[1:]))
+    ns = parse_args(args)
     sys.exit(run_cli(ns))
 
 if __name__ == "__main__":
