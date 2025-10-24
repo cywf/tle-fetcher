@@ -1,0 +1,22 @@
+version: 1
+specs:
+  doc_suite:
+    description: "Documentation suite covering architecture, operations, security, connectors, contributing, and release notes"
+    status: implemented
+    artifacts:
+      - README.md
+      - docs/ARCHITECTURE.md
+      - docs/OPERATIONS.md
+      - docs/SECURITY.md
+      - docs/CONNECTORS.md
+      - docs/CONTRIBUTING.md
+      - docs/RELEASE_NOTES.md
+  docs_ci:
+    description: "Documentation linting enforced via GitHub Actions"
+    status: implemented
+    artifacts:
+      - .github/workflows/docs-lint.yml
+matrix:
+  docs_ci:
+    depends_on:
+      - doc_suite

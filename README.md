@@ -1,130 +1,134 @@
-[![Nightly TLE refresh](https://github.com/cywf/tle-fetcher/actions/workflows/fetch-tles.yml/badge.svg)](https://github.com/cywf/tle-fetcher/actions/workflows/fetch-tles.yml)
 # TLE Fetcher Utility
 
-This repository contains a robust terminal-based utility for fetching up-to-date Two-Line Element (TLE) data for satellites from publicly available sources. It supports multiple data providers—CelesTrak and Ivan’s TLE API by default, with optional fallback to Space-Track and N2YO when credentials are provided. The tool can fetch single IDs interactively or process a batch of IDs from a queue file, validating and caching results.
+[![Nightly TLE refresh](https://github.com/cywf/tle-fetcher/actions/workflows/fetch-tles.yml/badge.svg)](https://github.com/cywf/tle-fetcher/actions/workflows/fetch-tles.yml)
 
-## Requirements
+TLE Fetcher is a terminal-first assistant for downloading current Two-Line Elements
+(TLEs) for satellites from public and authenticated providers. It prioritises robust
+retrieval—retrying requests, validating checksums, and caching responses locally—so
+you can keep working even when the network is unreliable.
 
-- Python 3.x (tested with 3.8+).  
-- Internet access to reach the TLE sources.  
-- Optional: valid credentials for Space-Track (`SPACETRACK_USER`/`SPACETRACK_PASS`) and/or N2YO (`N2YO_API_KEY`) if you wish to use those services.
+## Features
 
-## Queueing and Batch Fetching
+- **Multi-source resolution.** Query CelesTrak and Ivan Stanojević’s public API by
+  default, with optional fallbacks to Space-Track and N2YO when credentials are
+  supplied.
+- **Offline-aware caching.** Results are cached under `~/.cache/tle-fetcher` for two
+  hours, allowing you to re-run commands or work without connectivity after an
+  initial sync.
+- **Batch and ad-hoc operation.** Provide one or more NORAD catalog IDs directly on
+  the command line or by pointing at a queue file.
+- **Flexible exports.** Write results to stdout, save per-satellite files, or emit
+  the canonical three-line format (name + two TLE lines).
 
-You can provide one or more NORAD catalog IDs on the command line, or point the script at a text file containing IDs (one per line). Blank lines and lines starting with `#` are ignored. An example file, `ids.txt`, is included in the repository:
+## Offline-first quickstart
 
+The quickest path to a reliable offline cache is to prefetch your queue while
+online, then rely on the local cache for subsequent lookups.
+
+1. **Install the CLI** (see [Installation](#installation)).
+
+1. **Stage the IDs** you care about by listing them in `ids.txt` (one per line,
+   `#` comments allowed).
+
+1. **Prefetch while online** to seed the cache and write export files:
+
+   ```bash
+   python3 tle_fetcher.py --ids-file ids.txt --source-order celestrak,ivan -o "tles/{id}.tle"
+   ```
+
+   Each lookup is cached in `~/.cache/tle-fetcher` and also saved in `tles/`.
+
+1. **Work offline**—repeat the same command (or query individual IDs) without an
+   internet connection. Cached entries will be returned transparently; the CLI
+   exits non-zero only if a cache entry is missing or expired.
+
+1. **Refresh when convenient** by re-running the fetch command while online. Fresh
+   responses automatically overwrite the cached copy and any export files.
+
+## Installation
+
+These instructions assume Python 3.8 or newer is available. Replace `python3`
+with `python` on Windows if required.
+
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+pip install --upgrade pip
 ```
-# Queue of NORAD catalog IDs (one per line). Lines starting with '#' are ignored.
-25544   # ISS (ZARYA)
-43013   # TESS
+
+With the environment activated you can execute the script directly:
+
+```bash
+python3 tle_fetcher.py --help
 ```
 
-```
-# Queue of NORAD catalog IDs (one per line). Lines starting with '#' are ignored.
-25544   # ISS (ZARYA)
-43013   # TESS
-```
+Optional credentials can be supplied via environment variables to unlock premium
+sources:
 
-To fetch TLEs for all IDs in a file and save them into the `tles/` directory, run:
+- `SPACETRACK_USER` / `SPACETRACK_PASS` – enables the Space-Track fallback.
+- `N2YO_API_KEY` – enables the N2YO fallback.
 
-```
-python3 tle_fetcher.py --ids-file ids.txt --source-order celestrak,ivan --no-name -o "tles/{id}.tle"
-```
+## Command-line examples
 
-The `--source-order` flag controls which sources are queried first. When using the `-o` pattern, placeholders `{id}`, `{name}`, and `{epoch}` are substituted for the actual values. The `--no-name` flag omits satellite names from the file content.
+Run the interactive prompt for a single ID:
 
-## Running Manually
-
-Interactive mode is still supported for ad-hoc lookups. Run:
-
-```
+```bash
 python3 tle_fetcher.py
 ```
 
-and follow the prompts. You can also specify one or more IDs directly:
+Fetch one or more NORAD IDs non-interactively and print to stdout:
 
-```
+```bash
 python3 tle_fetcher.py 25544 43013 --source-order celestrak,ivan --quiet
 ```
 
-## Automated TLE Refresh via GitHub Actions
+Resolve IDs listed in a queue file and write each TLE to a dedicated file that
+includes the satellite name when available:
 
-A GitHub Actions workflow (`.github/workflows/fetch-tles.yml`) is included. It can be triggered manually (`workflow_dispatch`) or runs nightly at 03:27 UTC. Scheduled workflows use POSIX cron syntax and always run on the latest commit of the default branch. The job performs two passes:
-
-1. Fetch TLEs for all IDs in `ids.txt` from public sources (CelesTrak and Ivan API).  
-2. If secrets for Space-Track or N2YO are configured, fetch using those sources with verification. Secrets are masked in the logs.
-
-Fetched TLEs are stored under the `tles/` directory. The workflow commits updated `.tle` files back to the repository only when there are actual changes. Concurrency is configured so that only one nightly run executes at a time.
-
-To trigger the workflow manually, go to the **Actions** tab on GitHub, select **Nightly TLE refresh**, and click **Run workflow**.
-
-## Adding New IDs
-
-To add new satellites to the nightly refresh queue:
-
-1. Edit `ids.txt` and append the new NORAD catalog ID on its own line. Comments beginning with `#` are allowed.  
-2. Commit the change to the repository. The next scheduled run (or a manual run) will fetch and update the corresponding TLE files.
-
-## Rotating Secrets
-
-If you use Space-Track or N2YO, store your credentials as repository secrets (`SPACETRACK_USER`, `SPACETRACK_PASS`, and/or `N2YO_API_KEY`). To rotate them:
-
-1. Open the repository **Settings** → **Secrets and variables** → **Actions**.  
-2. Update the secret values.  
-3. Future workflow runs will use the new credentials automatically.
-
-## Data Sources
-
-This tool queries open TLE data sources such as CelesTrak and Ivan Stanojević’s TLE API. When configured, it also queries Space-Track and N2YO for cross-validation. Please respect each provider’s terms of service.
-
-To fetch TLEs for all IDs in a file and save them into the `tles/` directory, run:
-
-```
-python3 tle_fetcher.py --ids-file ids.txt --source-order celestrak,ivan --no-name -o "tles/{id}.tle"
+```bash
+python3 tle_fetcher.py --ids-file ids.txt --no-name -o "tles/{id}-{epoch}.tle"
 ```
 
-The `--source-order` flag controls which sources are queried first. When using the `-o` pattern, placeholders `{id}`, `{name}`, and `{epoch}` are substituted for the actual values. The `--no-name` flag omits satellite names from the file content.
+Preview the export path substitutions supported by the `-o/--output-pattern`
+flag:
 
-## Running Manually
+| Placeholder | Description |
+|-------------|----------------------------------|
+| `{id}` | NORAD catalog identifier |
+| `{name}` | Sanitised satellite name |
+| `{epoch}` | ISO 8601 timestamp of the TLE |
+| `{source}` | Provider that supplied the TLE |
 
-Interactive mode is still supported for ad-hoc lookups. Run:
+Combine providers with caching disabled (useful for diagnostics):
 
+```bash
+python3 tle_fetcher.py 25544 --source-order celestrak,ivan,n2yo --cache-ttl 0 --verbose
 ```
-python3 tle_fetcher.py
-```
 
-and follow the prompts. You can also specify one or more IDs directly:
+## Automating with GitHub Actions
 
-```
-python3 tle_fetcher.py 25544 43013 --source-order celestrak,ivan --quiet
-```
+The repository ships with `.github/workflows/fetch-tles.yml`, a nightly workflow
+scheduled for 03:27 UTC. It performs two passes:
 
-## Automated TLE Refresh via GitHub Actions
+1. Fetch IDs in `ids.txt` using public sources (CelesTrak + Ivan).
+1. Retry with authenticated sources (Space-Track, N2YO) when the relevant
+   secrets are available.
 
-A GitHub Actions workflow (`.github/workflows/fetch-tles.yml`) is included. It can be triggered manually (`workflow_dispatch`) or runs nightly at 03:27 UTC. Scheduled workflows use POSIX cron syntax and always run on the latest commit of the default branch. The job performs two passes:
+Outputs are written to `tles/` and committed back to the repository when they
+change. Concurrency is limited so only one refresh runs at a time. Use
+**Actions → Nightly TLE refresh → Run workflow** to trigger it manually.
 
-1. Fetch TLEs for all IDs in `ids.txt` from public sources (CelesTrak and Ivan API).  
-2. If secrets for Space-Track or N2YO are configured, fetch using those sources with verification. Secrets are masked in the logs.
+## Contributing and further reading
 
-Fetched TLEs are stored under the `tles/` directory. The workflow commits updated `.tle` files back to the repository only when there are actual changes. Concurrency is configured so that only one nightly run executes at a time.
+Extended guidance lives in the `docs/` directory:
 
-To trigger the workflow manually, go to the **Actions** tab on GitHub, select **Nightly TLE refresh**, and click **Run workflow**.
+- [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) – module layout and data flow.
+- [`docs/OPERATIONS.md`](docs/OPERATIONS.md) – operational runbooks.
+- [`docs/SECURITY.md`](docs/SECURITY.md) – credential management guidance.
+- [`docs/CONNECTORS.md`](docs/CONNECTORS.md) – source-specific notes.
+- [`docs/CONTRIBUTING.md`](docs/CONTRIBUTING.md) – contribution workflow.
+- [`docs/RELEASE_NOTES.md`](docs/RELEASE_NOTES.md) – history of published
+  upgrades.
 
-## Adding New IDs
-
-To add new satellites to the nightly refresh queue:
-
-1. Edit `ids.txt` and append the new NORAD catalog ID on its own line. Comments beginning with `#` are allowed.  
-2. Commit the change to the repository. The next scheduled run (or a manual run) will fetch and update the corresponding TLE files.
-
-## Rotating Secrets
-
-If you use Space-Track or N2YO, store your credentials as repository secrets (`SPACETRACK_USER`, `SPACETRACK_PASS`, and/or `N2YO_API_KEY`). To rotate them:
-
-1. Open the repository **Settings** → **Secrets and variables** → **Actions**.  
-2. Update the secret values.  
-3. Future workflow runs will use the new credentials automatically.
-
-## Data Sources
-
-This tool queries open TLE data sources such as CelesTrak and Ivan Stanojević’s TLE API. When configured, it also queries Space-Track and N2YO for cross-validation. Please respect each provider’s terms of service.
+We welcome pull requests and issue reports—see the contribution guide for
+coding standards and review expectations.

@@ -1,0 +1,40 @@
+name: Documentation lint
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+      - work
+
+jobs:
+  markdown:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install mdformat
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install mdformat
+
+      - name: Lint Markdown files
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+import pathlib
+import subprocess
+
+root = pathlib.Path('.')
+markdown_files = [path for path in [root / 'README.md', *root.glob('docs/*.md')]
+                  if path.exists()]
+if not markdown_files:
+    raise SystemExit('No Markdown files found')
+subprocess.run(['mdformat', '--check', *map(str, markdown_files)], check=True)
+PY
