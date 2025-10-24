@@ -28,7 +28,7 @@ You can provide one or more NORAD catalog IDs on the command line, or point the 
 To fetch TLEs for all IDs in a file and save them into the `tles/` directory, run:
 
 ```
-python3 tle_fetcher.py --ids-file ids.txt --source-order celestrak,ivan --no-name -o "tles/{id}.tle"
+python -m tle_fetcher fetch --ids-file ids.txt --source-order celestrak,ivan --no-name -o "tles/{id}.tle"
 ```
 
 The `--source-order` flag controls which sources are queried first. When using the `-o` pattern, placeholders `{id}`, `{name}`, and `{epoch}` are substituted for the actual values. The `--no-name` flag omits satellite names from the file content.
@@ -38,13 +38,13 @@ The `--source-order` flag controls which sources are queried first. When using t
 Interactive mode is still supported for ad-hoc lookups. Run:
 
 ```
-python3 tle_fetcher.py
+python -m tle_fetcher fetch
 ```
 
 and follow the prompts. You can also specify one or more IDs directly:
 
 ```
-python3 tle_fetcher.py 25544 43013 --source-order celestrak,ivan --quiet
+python -m tle_fetcher fetch 25544 43013 --source-order celestrak,ivan --quiet
 ```
 
 ## Automated TLE Refresh via GitHub Actions
@@ -77,10 +77,35 @@ If you use Space-Track or N2YO, store your credentials as repository secrets (`S
 
 This tool queries open TLE data sources such as CelesTrak and Ivan Stanojević’s TLE API. When configured, it also queries Space-Track and N2YO for cross-validation. Please respect each provider’s terms of service.
 
+## Catalogue discovery workflow
+
+For bulk catalogue refreshes use the discovery pipeline, which persists
+entire source responses inside `data/ingest.sqlite3` for offline reuse.
+Run it via the new sub-command:
+
+```
+python -m tle_fetcher discover --source celestrak
+```
+
+Key flags:
+
+- `--source` selects the upstream catalogue (default: `celestrak`).
+- `--since` filters out entries whose epochs are at or before the
+  provided ISO timestamp. When omitted the pipeline resumes from the
+  last recorded cursor.
+- `--offline` prevents network access and reuses the cached payload. The
+  command fails if the requested source/since combination has not been
+  cached previously.
+
+Each pipeline execution records a row in the `runs` table alongside a
+deduplicated list of new entries, making repeated runs idempotent. The
+database doubles as a local mirror of the last successful catalogue
+snapshot, enabling quick discovery even without connectivity.
+
 To fetch TLEs for all IDs in a file and save them into the `tles/` directory, run:
 
 ```
-python3 tle_fetcher.py --ids-file ids.txt --source-order celestrak,ivan --no-name -o "tles/{id}.tle"
+python -m tle_fetcher fetch --ids-file ids.txt --source-order celestrak,ivan --no-name -o "tles/{id}.tle"
 ```
 
 The `--source-order` flag controls which sources are queried first. When using the `-o` pattern, placeholders `{id}`, `{name}`, and `{epoch}` are substituted for the actual values. The `--no-name` flag omits satellite names from the file content.
@@ -90,13 +115,13 @@ The `--source-order` flag controls which sources are queried first. When using t
 Interactive mode is still supported for ad-hoc lookups. Run:
 
 ```
-python3 tle_fetcher.py
+python -m tle_fetcher fetch
 ```
 
 and follow the prompts. You can also specify one or more IDs directly:
 
 ```
-python3 tle_fetcher.py 25544 43013 --source-order celestrak,ivan --quiet
+python -m tle_fetcher fetch 25544 43013 --source-order celestrak,ivan --quiet
 ```
 
 ## Automated TLE Refresh via GitHub Actions
