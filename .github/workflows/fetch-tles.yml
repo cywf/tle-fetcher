@@ -63,3 +63,4 @@ jobs:
             git push
           else
             echo "No updates."
+          fi
