@@ -92,7 +92,10 @@ export default function ControlPanel({ onSubmit, isComputing }: ControlPanelProp
               min="-90"
               max="90"
               value={formData.latitude}
-              onChange={(e) => handleChange('latitude', parseFloat(e.target.value) || 0)}
+              onChange={(e) => {
+                const parsed = parseFloat(e.target.value);
+                handleChange('latitude', isNaN(parsed) ? 0 : parsed);
+              }}
               placeholder="-90 to 90"
               disabled={isComputing}
             />
@@ -109,7 +112,10 @@ export default function ControlPanel({ onSubmit, isComputing }: ControlPanelProp
               min="-180"
               max="180"
               value={formData.longitude}
-              onChange={(e) => handleChange('longitude', parseFloat(e.target.value) || 0)}
+              onChange={(e) => {
+                const parsed = parseFloat(e.target.value);
+                handleChange('longitude', isNaN(parsed) ? 0 : parsed);
+              }}
               placeholder="-180 to 180"
               disabled={isComputing}
             />
@@ -155,7 +161,10 @@ export default function ControlPanel({ onSubmit, isComputing }: ControlPanelProp
               min="1"
               max="1440"
               value={formData.totMinutes}
-              onChange={(e) => handleChange('totMinutes', parseInt(e.target.value) || 15)}
+              onChange={(e) => {
+                const parsed = parseInt(e.target.value);
+                handleChange('totMinutes', isNaN(parsed) ? 15 : parsed);
+              }}
               disabled={isComputing}
             />
             {errors.totMinutes && <p className="error-text">{errors.totMinutes}</p>}
@@ -171,7 +180,10 @@ export default function ControlPanel({ onSubmit, isComputing }: ControlPanelProp
               max="90"
               step="0.1"
               value={formData.minElevationDeg}
-              onChange={(e) => handleChange('minElevationDeg', parseFloat(e.target.value) || 5)}
+              onChange={(e) => {
+                const parsed = parseFloat(e.target.value);
+                handleChange('minElevationDeg', isNaN(parsed) ? 5 : parsed);
+              }}
               disabled={isComputing}
             />
             {errors.minElevationDeg && <p className="error-text">{errors.minElevationDeg}</p>}

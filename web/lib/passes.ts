@@ -57,7 +57,7 @@ function observerECF(observer: ObserverLocation, date: Date) {
  * Compute look angles from observer to satellite
  */
 function getLookAngles(
-  satelliteECF: satellite.EciVec3<number>,
+  satelliteECF: satellite.EcfVec3<number>,
   observerECF: satellite.EcfVec3<number>,
   observer: ObserverLocation,
   date: Date
@@ -68,7 +68,7 @@ function getLookAngles(
     height: (observer.altitude || 0) / 1000,
   };
   
-  const lookAngles = satellite.ecfToLookAngles(positionGd, satelliteECF as any);
+  const lookAngles = satellite.ecfToLookAngles(positionGd, satelliteECF);
   
   return {
     elevation: satellite.radiansToDegrees(lookAngles.elevation),
@@ -130,7 +130,7 @@ export function computePasses(
     const observerEcfPos = observerECF(observer, time);
     
     // Compute look angles
-    const lookAngles = getLookAngles(positionEcf as any, observerEcfPos, observer, time);
+    const lookAngles = getLookAngles(positionEcf, observerEcfPos, observer, time);
     
     // Check if satellite is above horizon
     if (lookAngles.elevation >= minElevationDeg) {

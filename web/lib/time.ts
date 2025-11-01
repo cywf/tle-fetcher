@@ -5,6 +5,9 @@
 import { parse, format, isValid } from 'date-fns';
 import { toZonedTime, fromZonedTime } from 'date-fns-tz';
 
+// Cache the default timezone to avoid repeated lookups
+const DEFAULT_TIMEZONE = Intl.DateTimeFormat().resolvedOptions().timeZone;
+
 export interface TimeInput {
   date: string;       // YYYY-MM-DD
   time: string;       // HH:mm
@@ -26,7 +29,7 @@ export function parseDateTime(input: TimeInput): Date | null {
     }
 
     // Convert from local timezone to UTC
-    const timezone = input.timezone || Intl.DateTimeFormat().resolvedOptions().timeZone;
+    const timezone = input.timezone || DEFAULT_TIMEZONE;
     return fromZonedTime(parsed, timezone);
   } catch (error) {
     console.error('Error parsing date/time:', error);
@@ -39,7 +42,7 @@ export function formatDateTime(date: Date, useUTC: boolean = false, timezone?: s
     return format(date, 'yyyy-MM-dd HH:mm:ss') + ' UTC';
   }
   
-  const tz = timezone || Intl.DateTimeFormat().resolvedOptions().timeZone;
+  const tz = timezone || DEFAULT_TIMEZONE;
   const zonedDate = toZonedTime(date, tz);
   return format(zonedDate, 'yyyy-MM-dd HH:mm:ss');
 }
