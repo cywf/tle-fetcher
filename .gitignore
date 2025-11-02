@@ -11,3 +11,12 @@ web/.env*.local
 web/npm-debug.log*
 web/yarn-debug.log*
 web/yarn-error.log*
+
+# Astro site
+site/node_modules/
+site/dist/
+site/.astro/
+site/.env*.local
+site/npm-debug.log*
+site/yarn-debug.log*
+site/yarn-error.log*

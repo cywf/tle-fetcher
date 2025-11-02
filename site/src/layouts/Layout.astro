@@ -1,0 +1,191 @@
+---
+import '../styles/global.css';
+import ThemeSwitcher from '../components/ThemeSwitcher';
+
+interface Props {
+  title: string;
+  description?: string;
+}
+
+const { title, description = 'TLE Fetcher - Satellite tracking and pass prediction' } = Astro.props;
+const { pathname } = Astro.url;
+const basePath = import.meta.env.BASE_URL;
+
+const navItems = [
+  { href: '/', label: 'Home' },
+  { href: '/pass-planner', label: 'Pass Planner' },
+  { href: '/statistics', label: 'Statistics' },
+  { href: '/discussions', label: 'Discussions' },
+  { href: '/development-board', label: 'Dev Board' },
+  { href: '/create-issue', label: 'Create Issue' },
+  { href: '/docs', label: 'Docs' },
+  { href: '/visualizer', label: 'Visualizer' },
+];
+
+// Generate breadcrumbs
+const pathParts = pathname.replace(basePath, '').split('/').filter(Boolean);
+const breadcrumbs = pathParts.length > 0 
+  ? pathParts.map((part, i) => ({
+      label: part.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' '),
+      href: basePath + '/' + pathParts.slice(0, i + 1).join('/'),
+    }))
+  : [];
+
+// Get last deploy info from environment or build time
+const deployTime = new Date().toISOString();
+const shortSha = import.meta.env.PUBLIC_COMMIT_SHA?.slice(0, 7) || 'dev';
+---
+
+<!doctype html>
+<html lang="en" data-theme="nightfall">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content={description} />
+    <title>{title}</title>
+    <link rel="icon" type="image/svg+xml" href={`${basePath}/favicon.svg`} />
+    
+    <!-- Theme initialization script (runs before content renders) -->
+    <script is:inline>
+      const savedTheme = localStorage.getItem('theme');
+      if (savedTheme) {
+        document.documentElement.setAttribute('data-theme', savedTheme);
+      } else {
+        const defaultTheme = 'nightfall';
+        document.documentElement.setAttribute('data-theme', defaultTheme);
+      }
+    </script>
+  </head>
+  <body class="min-h-screen flex flex-col bg-base-100 text-base-content">
+    <!-- Skip to content -->
+    <a href="#main-content" class="skip-to-content">
+      Skip to content
+    </a>
+
+    <!-- Navbar -->
+    <header class="navbar bg-base-200 shadow-lg sticky top-0 z-40 border-b border-base-300">
+      <div class="navbar-start">
+        <div class="dropdown">
+          <div tabindex={0} role="button" class="btn btn-ghost lg:hidden" aria-label="Open menu">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              class="h-5 w-5"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M4 6h16M4 12h8m-8 6h16"
+              />
+            </svg>
+          </div>
+          <ul
+            tabindex={0}
+            class="menu menu-sm dropdown-content mt-3 z-50 p-2 shadow-lg bg-base-200 rounded-box w-52"
+          >
+            {navItems.map((item) => (
+              <li>
+                <a
+                  href={basePath + item.href}
+                  class={pathname === basePath + item.href || (item.href !== '/' && pathname.startsWith(basePath + item.href)) ? 'active' : ''}
+                >
+                  {item.label}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </div>
+        <a href={basePath + '/'} class="btn btn-ghost text-xl font-bold">
+          <span class="hidden sm:inline">TLE Fetcher</span>
+          <span class="sm:hidden">TLE</span>
+        </a>
+      </div>
+      
+      <div class="navbar-center hidden lg:flex">
+        <ul class="menu menu-horizontal px-1 gap-1">
+          {navItems.map((item) => (
+            <li>
+              <a
+                href={basePath + item.href}
+                class={pathname === basePath + item.href || (item.href !== '/' && pathname.startsWith(basePath + item.href)) ? 'active' : ''}
+              >
+                {item.label}
+              </a>
+            </li>
+          ))}
+        </ul>
+      </div>
+      
+      <div class="navbar-end gap-2">
+        <ThemeSwitcher client:load />
+        <a
+          href="https://github.com/cywf/tle-fetcher"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="btn btn-ghost btn-circle"
+          aria-label="View on GitHub"
+        >
+          <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+            <path
+              fill-rule="evenodd"
+              d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"
+              clip-rule="evenodd"
+            />
+          </svg>
+        </a>
+      </div>
+    </header>
+
+    <!-- Breadcrumbs -->
+    {breadcrumbs.length > 0 && (
+      <div class="bg-base-200 border-b border-base-300">
+        <div class="container mx-auto px-4 py-2">
+          <div class="breadcrumbs text-sm">
+            <ul>
+              <li><a href={basePath + '/'}>Home</a></li>
+              {breadcrumbs.map((crumb, i) => (
+                <li>
+                  {i === breadcrumbs.length - 1 ? (
+                    <span>{crumb.label}</span>
+                  ) : (
+                    <a href={crumb.href}>{crumb.label}</a>
+                  )}
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+      </div>
+    )}
+
+    <!-- Main content -->
+    <main id="main-content" class="flex-1 container mx-auto px-4 py-8">
+      <slot />
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer footer-center p-10 bg-base-200 text-base-content border-t border-base-300">
+      <div class="grid grid-flow-col gap-4">
+        <a href="https://github.com/cywf/tle-fetcher/blob/main/LICENSE" target="_blank" rel="noopener noreferrer" class="link link-hover">
+          License
+        </a>
+        <a href="https://github.com/cywf/tle-fetcher/blob/main/docs/CONTRIBUTING.md" target="_blank" rel="noopener noreferrer" class="link link-hover">
+          Contributing
+        </a>
+        <a href="https://github.com/cywf/tle-fetcher/blob/main/docs/SECURITY.md" target="_blank" rel="noopener noreferrer" class="link link-hover">
+          Security
+        </a>
+      </div>
+      <div class="text-sm opacity-70">
+        <p>Last deploy: <time datetime={deployTime}>{new Date(deployTime).toLocaleString()}</time></p>
+        <p>Commit: <code class="text-xs">{shortSha}</code></p>
+      </div>
+      <div>
+        <p>© {new Date().getFullYear()} TLE Fetcher - Built with Astro</p>
+      </div>
+    </footer>
+  </body>
+</html>

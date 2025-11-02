@@ -1,0 +1,12 @@
+---
+import Layout from '../layouts/Layout.astro';
+import StatisticsCharts from '../components/StatisticsCharts';
+---
+
+<Layout title="Statistics - TLE Fetcher">
+  <div class="space-y-6">
+    <h1 class="text-4xl font-bold mb-6">Repository Statistics</h1>
+    
+    <StatisticsCharts client:load />
+  </div>
+</Layout>

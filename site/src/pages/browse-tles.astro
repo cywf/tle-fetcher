@@ -1,0 +1,43 @@
+---
+import Layout from '../layouts/Layout.astro';
+import TLEBrowser from '../components/TLEBrowser';
+---
+
+<Layout title="Browse TLEs - TLE Fetcher">
+  <div class="space-y-6">
+    <div class="flex justify-between items-center">
+      <h1 class="text-4xl font-bold">Browse TLE Files</h1>
+      <a
+        href="https://github.com/cywf/tle-fetcher/tree/main/tles"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="btn btn-outline"
+      >
+        View on GitHub
+      </a>
+    </div>
+
+    <div class="alert alert-info shadow-lg">
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        fill="none"
+        viewBox="0 0 24 24"
+        class="stroke-current shrink-0 w-6 h-6"
+      >
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2"
+          d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+        />
+      </svg>
+      <div>
+        <div class="text-sm">
+          These TLE files are automatically updated nightly by GitHub Actions from CelesTrak and other sources.
+        </div>
+      </div>
+    </div>
+    
+    <TLEBrowser client:load />
+  </div>
+</Layout>

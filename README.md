@@ -1,5 +1,44 @@
 [![Nightly TLE refresh](https://github.com/cywf/tle-fetcher/actions/workflows/fetch-tles.yml/badge.svg)](https://github.com/cywf/tle-fetcher/actions/workflows/fetch-tles.yml)
+[![Deploy Pages](https://github.com/cywf/tle-fetcher/actions/workflows/pages.yml/badge.svg)](https://github.com/cywf/tle-fetcher/actions/workflows/pages.yml)
+
 # TLE Fetcher Utility
+
+This repository contains a robust terminal-based utility for fetching up-to-date Two-Line Element (TLE) data for satellites from publicly available sources. It supports multiple data providers—CelesTrak and Ivan's TLE API by default, with optional fallback to Space-Track and N2YO when credentials are provided. The tool can fetch single IDs interactively or process a batch of IDs from a queue file, validating and caching results.
+
+## 🚀 Live Site
+
+Visit the comprehensive project site at: **https://cywf.github.io/tle-fetcher/**
+
+The site features:
+- **Interactive Pass Planner** - Satellite visibility prediction embedded from Next.js
+- **Repository Statistics** - Stars, forks, language breakdown, and commit activity
+- **Project Board** - Track development progress
+- **Documentation** - Complete project documentation
+- **Mermaid Diagrams** - Visual project architecture
+- **TLE Browser** - Browse and download TLE files
+
+### How the Site is Built
+
+The site is powered by **Astro** with React components and is fully static:
+
+1. **Static Site Generation**: The `site/` directory contains an Astro application that builds to static HTML/CSS/JS
+2. **Next.js Dashboard Embedding**: The existing `web/` Next.js app is built statically (`npm run build`) and embedded at `/pass-planner`
+3. **TLE Asset Syncing**: TLE files from `tles/` are copied to `site/public/tle/` and a catalog JSON is generated
+4. **Data Snapshots**: CI fetches repository statistics, discussions, and project board data via GitHub API and saves as JSON
+5. **GitHub Actions**: The `.github/workflows/pages.yml` workflow orchestrates all build steps and deploys to GitHub Pages
+
+### Site Development
+
+To run the site locally:
+
+```bash
+cd site
+npm install
+npm run dev
+```
+
+Then open http://localhost:4321/tle-fetcher in your browser.
+
 
 This repository contains a robust terminal-based utility for fetching up-to-date Two-Line Element (TLE) data for satellites from publicly available sources. It supports multiple data providers—CelesTrak and Ivan’s TLE API by default, with optional fallback to Space-Track and N2YO when credentials are provided. The tool can fetch single IDs interactively or process a batch of IDs from a queue file, validating and caching results.
 

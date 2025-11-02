@@ -1,0 +1,69 @@
+---
+import Layout from '../layouts/Layout.astro';
+
+const basePath = import.meta.env.BASE_URL;
+---
+
+<Layout title="404 - Page Not Found">
+  <div class="min-h-[60vh] flex items-center justify-center">
+    <div class="text-center max-w-2xl mx-auto space-y-6">
+      <div class="text-9xl font-bold text-primary">404</div>
+      
+      <h1 class="text-4xl font-bold">Page Not Found</h1>
+      
+      <p class="text-xl opacity-80">
+        Oops! The page you're looking for doesn't exist or has been moved.
+      </p>
+
+      <div class="flex gap-4 justify-center flex-wrap">
+        <a href={basePath + '/'} class="btn btn-primary btn-lg">
+          Go Home
+        </a>
+        <a href={basePath + '/pass-planner'} class="btn btn-outline btn-lg">
+          Pass Planner
+        </a>
+        <a href={basePath + '/docs'} class="btn btn-outline btn-lg">
+          Documentation
+        </a>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="text-left">
+        <h2 class="text-2xl font-bold mb-4">Quick Links</h2>
+        <ul class="space-y-2">
+          <li>
+            <a href={basePath + '/'} class="link link-hover">
+              🏠 Home
+            </a>
+          </li>
+          <li>
+            <a href={basePath + '/pass-planner'} class="link link-hover">
+              🛰️ Pass Planner
+            </a>
+          </li>
+          <li>
+            <a href={basePath + '/statistics'} class="link link-hover">
+              📊 Statistics
+            </a>
+          </li>
+          <li>
+            <a href={basePath + '/discussions'} class="link link-hover">
+              💬 Discussions
+            </a>
+          </li>
+          <li>
+            <a href={basePath + '/docs'} class="link link-hover">
+              📚 Documentation
+            </a>
+          </li>
+          <li>
+            <a href="https://github.com/cywf/tle-fetcher" target="_blank" rel="noopener noreferrer" class="link link-hover">
+              🔗 GitHub Repository
+            </a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</Layout>
