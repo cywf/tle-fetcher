@@ -1,0 +1,35 @@
+sequenceDiagram
+    participant Dev as Developer
+    participant GH as GitHub
+    participant CI as GitHub Actions
+    participant Pages as GitHub Pages
+
+    Dev->>GH: Push to main
+    GH->>CI: Trigger pages.yml workflow
+    
+    Note over CI: Sync TLE assets
+    CI->>CI: Copy tles/* to site/public/tle/
+    CI->>CI: Generate TLE catalog.json
+    
+    Note over CI: Build Next.js Dashboard
+    CI->>CI: npm ci && npm run build (web/)
+    CI->>CI: Copy web/out to site/public/dashboard/
+    
+    Note over CI: Fetch Repository Data
+    CI->>GH: Fetch stats, discussions, projects
+    CI->>CI: Save as JSON in site/public/data/
+    
+    Note over CI: Copy Mermaid Diagrams
+    CI->>CI: Find mermaid/*.mmd files
+    CI->>CI: Copy to site/public/diagrams/
+    CI->>CI: Generate diagrams.json
+    
+    Note over CI: Build Astro Site
+    CI->>CI: npm run build (site/)
+    CI->>CI: Output to site/dist/
+    
+    Note over CI: Deploy
+    CI->>Pages: Upload artifact (site/dist/)
+    CI->>Pages: Deploy to GitHub Pages
+    
+    Pages->>Dev: Site live at cywf.github.io/tle-fetcher

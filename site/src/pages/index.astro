@@ -1,0 +1,187 @@
+---
+import Layout from '../layouts/Layout.astro';
+
+const basePath = import.meta.env.BASE_URL;
+
+const quickLinks = [
+  {
+    title: 'Issues',
+    href: 'https://github.com/cywf/tle-fetcher/issues',
+    description: 'Report bugs or request features',
+    icon: '🐛',
+  },
+  {
+    title: 'Discussions',
+    href: 'https://github.com/cywf/tle-fetcher/discussions',
+    description: 'Join the community conversation',
+    icon: '💬',
+  },
+  {
+    title: 'Releases',
+    href: 'https://github.com/cywf/tle-fetcher/releases',
+    description: 'View version history',
+    icon: '🚀',
+  },
+  {
+    title: 'Contributing',
+    href: 'https://github.com/cywf/tle-fetcher/blob/main/docs/CONTRIBUTING.md',
+    description: 'Learn how to contribute',
+    icon: '🤝',
+  },
+  {
+    title: 'Security',
+    href: 'https://github.com/cywf/tle-fetcher/blob/main/docs/SECURITY.md',
+    description: 'Security policies and practices',
+    icon: '🔒',
+  },
+];
+---
+
+<Layout title="TLE Fetcher - Home">
+  <div class="space-y-8">
+    <!-- Hero Section -->
+    <div class="hero bg-base-200 rounded-lg shadow-lg">
+      <div class="hero-content text-center py-12">
+        <div class="max-w-3xl">
+          <h1 class="text-5xl font-bold mb-4">TLE Fetcher Utility</h1>
+          <p class="text-xl mb-6">
+            A robust terminal-based utility for fetching up-to-date Two-Line Element (TLE) data for satellites from publicly available sources.
+          </p>
+          <div class="flex gap-4 justify-center flex-wrap">
+            <a href={basePath + '/pass-planner'} class="btn btn-primary btn-lg">
+              Launch Pass Planner
+            </a>
+            <a href="https://github.com/cywf/tle-fetcher" target="_blank" rel="noopener noreferrer" class="btn btn-outline btn-lg">
+              View on GitHub
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Overview -->
+    <div class="card bg-base-200 shadow-lg">
+      <div class="card-body">
+        <h2 class="card-title text-3xl mb-4">Overview</h2>
+        <div class="prose prose-invert max-w-none">
+          <p>
+            This repository contains a robust terminal-based utility for fetching up-to-date Two-Line Element (TLE) data for satellites from publicly available sources. It supports multiple data providers—CelesTrak and Ivan's TLE API by default, with optional fallback to Space-Track and N2YO when credentials are provided.
+          </p>
+          <p>
+            The tool can fetch single IDs interactively or process a batch of IDs from a queue file, validating and caching results.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Web Dashboard Info -->
+    <div class="card bg-base-200 shadow-lg">
+      <div class="card-body">
+        <h2 class="card-title text-3xl mb-4">🌐 Web Dashboard</h2>
+        <div class="prose prose-invert max-w-none">
+          <p>
+            A <strong>static Next.js web dashboard</strong> is included for interactive satellite pass prediction. The dashboard computes satellite line-of-sight (LOS) windows based on observer location, date, time, and time-on-target parameters.
+          </p>
+          
+          <h3 class="text-2xl mt-6 mb-3">Features</h3>
+          <ul class="space-y-2">
+            <li>🎨 <strong>Retro synthwave control panel UI</strong> with analog gauges and LED indicators</li>
+            <li>⚡ <strong>Real-time pass computation</strong> using SGP4 propagation (satellite.js)</li>
+            <li>📁 <strong>Local TLE assets</strong> with automatic CelesTrak fallback</li>
+            <li>🛰️ <strong>Satellite metadata</strong> from SatNOGS DB and CelesTrak SATCAT</li>
+            <li>🔒 <strong>Fully static</strong> - runs on GitHub Pages without a server</li>
+            <li>🔐 <strong>Privacy-friendly</strong> - no API keys required for basic functionality</li>
+          </ul>
+
+          <h3 class="text-2xl mt-6 mb-3">How the Pass Algorithm Works</h3>
+          <ol class="space-y-2">
+            <li><strong>Load TLE data:</strong> Fetches Two-Line Element sets from local assets or CelesTrak</li>
+            <li><strong>Time window:</strong> User specifies observer location (lat/lon), start time, and Time-on-Target duration</li>
+            <li><strong>Propagation:</strong> Computes satellite position every 10 seconds across the time window</li>
+            <li><strong>Visibility:</strong> Determines when satellite elevation exceeds minimum threshold (default 5°)</li>
+            <li><strong>Results:</strong> Lists all satellites visible during the window with first-seen, last-seen, and max elevation</li>
+          </ol>
+          <p class="mt-4">
+            The algorithm runs entirely in the browser using satellite.js for SGP4/SDP4 propagation.
+          </p>
+        </div>
+        <div class="card-actions justify-end mt-4">
+          <a href={basePath + '/pass-planner'} class="btn btn-primary">
+            Launch Pass Planner →
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- CLI Capabilities -->
+    <div class="card bg-base-200 shadow-lg">
+      <div class="card-body">
+        <h2 class="card-title text-3xl mb-4">💻 CLI Capabilities</h2>
+        <div class="prose prose-invert max-w-none">
+          <h3 class="text-2xl mb-3">Quick Start</h3>
+          <div class="mockup-code">
+            <pre><code>python3 tle_fetcher.py 25544 43013 --source-order celestrak,ivan --quiet</code></pre>
+          </div>
+          
+          <h3 class="text-2xl mt-6 mb-3">Batch Processing</h3>
+          <div class="mockup-code">
+            <pre><code>python3 tle_fetcher.py --ids-file ids.txt --source-order celestrak,ivan --no-name -o "tles/{'{'}id{'}'}.tle"</code></pre>
+          </div>
+
+          <p class="mt-4">
+            The <code>--source-order</code> flag controls which sources are queried first. When using the <code>-o</code> pattern, placeholders <code>{'{'}id{'}'}</code>, <code>{'{'}name{'}'}</code>, and <code>{'{'}epoch{'}'}</code> are substituted for the actual values.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Quick Links -->
+    <div class="card bg-base-200 shadow-lg">
+      <div class="card-body">
+        <h2 class="card-title text-3xl mb-4">Quick Links</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {quickLinks.map((link) => (
+            <a
+              href={link.href}
+              target="_blank"
+              rel="noopener noreferrer"
+              class="card bg-base-300 hover:bg-base-100 transition-colors shadow-md"
+            >
+              <div class="card-body">
+                <div class="text-4xl mb-2">{link.icon}</div>
+                <h3 class="card-title text-lg">{link.title}</h3>
+                <p class="text-sm opacity-70">{link.description}</p>
+              </div>
+            </a>
+          ))}
+        </div>
+      </div>
+    </div>
+
+    <!-- Run Locally -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div class="card bg-base-200 shadow-lg">
+        <div class="card-body">
+          <h2 class="card-title text-2xl mb-4">🐍 Run Python CLI</h2>
+          <div class="mockup-code text-sm">
+            <pre><code>git clone https://github.com/cywf/tle-fetcher.git</code></pre>
+            <pre><code>cd tle-fetcher</code></pre>
+            <pre><code>python3 tle_fetcher.py</code></pre>
+          </div>
+        </div>
+      </div>
+
+      <div class="card bg-base-200 shadow-lg">
+        <div class="card-body">
+          <h2 class="card-title text-2xl mb-4">🌐 Run Web Dashboard</h2>
+          <div class="mockup-code text-sm">
+            <pre><code>cd web</code></pre>
+            <pre><code>npm install</code></pre>
+            <pre><code>npm run dev</code></pre>
+          </div>
+          <p class="text-sm mt-2 opacity-70">Then open http://localhost:3000</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</Layout>

@@ -1,0 +1,187 @@
+name: Deploy Astro Site to Pages
+
+on:
+  push:
+    branches: ["main"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: |
+            site/package-lock.json
+            web/package-lock.json
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      # ========================================
+      # Step 1: Sync TLE assets
+      # ========================================
+      - name: Sync TLE assets to site
+        run: |
+          set -Eeuo pipefail
+          echo "Syncing TLE files from tles/ to site/public/tle/"
+          mkdir -p site/public/tle
+          if [ -d "tles" ] && [ "$(ls -A tles)" ]; then
+            cp -r tles/* site/public/tle/ || true
+            echo "TLE files synced successfully"
+          else
+            echo "No TLE files found in tles/ directory"
+          fi
+
+      # ========================================
+      # Step 2: Generate TLE catalog
+      # ========================================
+      - name: Build TLE catalog
+        run: |
+          cd site
+          npm ci
+          npx tsx src/scripts/build_tle_catalog.ts || echo "TLE catalog generation failed, continuing..."
+
+      # ========================================
+      # Step 3: Build Next.js dashboard
+      # ========================================
+      - name: Build Next.js dashboard
+        run: |
+          set -Eeuo pipefail
+          cd web
+          npm ci
+          npm run build || {
+            echo "WARNING: Next.js build failed, continuing without dashboard"
+            exit 0
+          }
+          
+          # Copy Next.js output to site public directory
+          if [ -d "out" ]; then
+            mkdir -p ../site/public/dashboard
+            cp -r out/* ../site/public/dashboard/
+            echo "Next.js dashboard built and copied successfully"
+          else
+            echo "WARNING: Next.js output directory not found"
+          fi
+
+      # ========================================
+      # Step 4: Fetch repository data snapshots
+      # ========================================
+      - name: Fetch repository statistics
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          cd site
+          npx tsx src/scripts/fetch_repo_data.ts || echo "Stats fetch failed, continuing..."
+
+      - name: Fetch discussions
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          cd site
+          npx tsx src/scripts/fetch_discussions.ts || echo "Discussions fetch failed, continuing..."
+
+      - name: Fetch project board data
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          cd site
+          npx tsx src/scripts/fetch_projects.ts || echo "Projects fetch failed, continuing..."
+
+      # ========================================
+      # Step 5: Discover and copy Mermaid diagrams
+      # ========================================
+      - name: Copy Mermaid diagrams
+        run: |
+          set -Eeuo pipefail
+          mkdir -p site/public/diagrams
+          
+          # Find all .mmd files
+          if [ -d "mermaid" ]; then
+            find mermaid -name "*.mmd" -type f | while read -r file; do
+              cp "$file" site/public/diagrams/
+              echo "Copied: $file"
+            done
+          fi
+          
+          # Generate diagrams.json listing
+          cd site/public/diagrams
+          if ls *.mmd 1> /dev/null 2>&1; then
+            echo "[" > diagrams.json
+            first=true
+            for file in *.mmd; do
+              if [ "$first" = false ]; then
+                echo "," >> diagrams.json
+              fi
+              first=false
+              id=$(basename "$file" .mmd)
+              name=$(echo "$id" | sed 's/-/ /g' | sed 's/\b\(.\)/\u\1/g')
+              echo "  {\"id\": \"$id\", \"name\": \"$name\", \"path\": \"/diagrams/$file\"}" >> diagrams.json
+            done
+            echo "]" >> diagrams.json
+            echo "Generated diagrams.json"
+          else
+            echo "[]" > diagrams.json
+            echo "No mermaid diagrams found"
+          fi
+
+      # ========================================
+      # Step 6: Build Astro site
+      # ========================================
+      - name: Build Astro site
+        env:
+          PUBLIC_COMMIT_SHA: ${{ github.sha }}
+          PUBLIC_DEFAULT_THEME: nightfall
+        run: |
+          cd site
+          npm run build
+
+      # ========================================
+      # Step 7: Run Lighthouse audit (optional)
+      # ========================================
+      - name: Lighthouse audit
+        run: |
+          npm install -g @lhci/cli@0.12.x
+          cd site/dist
+          python3 -m http.server 8080 &
+          SERVER_PID=$!
+          sleep 3
+          
+          lhci autorun \
+            --collect.url=http://localhost:8080/tle-fetcher/ \
+            --collect.numberOfRuns=1 \
+            || echo "Lighthouse audit failed or score below threshold, continuing..."
+          
+          kill $SERVER_PID || true
+
+      # ========================================
+      # Step 8: Configure and deploy Pages
+      # ========================================
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: './site/dist'
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

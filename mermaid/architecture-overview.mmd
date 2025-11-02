@@ -1,0 +1,43 @@
+graph TB
+    subgraph "Data Sources"
+        CS[CelesTrak]
+        IV[Ivan TLE API]
+        ST[Space-Track]
+        N2[N2YO]
+    end
+
+    subgraph "TLE Fetcher CLI"
+        CLI[Python CLI]
+        CACHE[Local Cache]
+    end
+
+    subgraph "Web Dashboard"
+        NEXT[Next.js App]
+        SGP4[satellite.js SGP4]
+        UI[Retro UI]
+    end
+
+    subgraph "Static Site"
+        ASTRO[Astro Framework]
+        PAGES[GitHub Pages]
+        STATS[Repository Stats]
+        DOCS[Documentation]
+    end
+
+    CS --> CLI
+    IV --> CLI
+    ST --> CLI
+    N2 --> CLI
+    CLI --> CACHE
+    CACHE --> NEXT
+    NEXT --> SGP4
+    SGP4 --> UI
+    UI --> ASTRO
+    DOCS --> ASTRO
+    STATS --> ASTRO
+    ASTRO --> PAGES
+
+    style CLI fill:#7c3aed
+    style NEXT fill:#2dd4bf
+    style ASTRO fill:#f59e0b
+    style PAGES fill:#10b981
