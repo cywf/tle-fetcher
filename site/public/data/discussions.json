@@ -1,0 +1,32 @@
+[
+  {
+    "number": 1,
+    "title": "Welcome to TLE Fetcher Discussions!",
+    "url": "https://github.com/cywf/tle-fetcher/discussions/1",
+    "author": "cywf",
+    "category": "Announcements",
+    "comments": 5,
+    "createdAt": "2024-10-01T10:00:00Z",
+    "updatedAt": "2024-10-15T14:30:00Z"
+  },
+  {
+    "number": 2,
+    "title": "Feature ideas for the web dashboard",
+    "url": "https://github.com/cywf/tle-fetcher/discussions/2",
+    "author": "contributor1",
+    "category": "Ideas",
+    "comments": 12,
+    "createdAt": "2024-10-10T09:00:00Z",
+    "updatedAt": "2024-10-28T16:20:00Z"
+  },
+  {
+    "number": 3,
+    "title": "How to add custom TLE sources?",
+    "url": "https://github.com/cywf/tle-fetcher/discussions/3",
+    "author": "user123",
+    "category": "Q&A",
+    "comments": 3,
+    "createdAt": "2024-10-20T11:15:00Z",
+    "updatedAt": "2024-10-22T09:45:00Z"
+  }
+]

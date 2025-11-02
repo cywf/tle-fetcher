@@ -81,7 +81,7 @@ function scanTLEFiles(dir: string, baseDir: string): TLEEntry[] {
 }
 
 function main() {
-  const publicDir = path.join(__dirname, '..', 'public');
+  const publicDir = path.join(__dirname, '..', '..', 'public');
   const tleDir = path.join(publicDir, 'tle');
   const outputPath = path.join(tleDir, 'catalog.json');
   

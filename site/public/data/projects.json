@@ -1,0 +1,42 @@
+[
+  {
+    "id": "1",
+    "title": "Implement real-time satellite tracking",
+    "status": "todo",
+    "url": "https://github.com/cywf/tle-fetcher/issues/1",
+    "labels": ["enhancement", "status:todo"],
+    "assignees": []
+  },
+  {
+    "id": "2",
+    "title": "Add support for custom TLE sources",
+    "status": "doing",
+    "url": "https://github.com/cywf/tle-fetcher/issues/2",
+    "labels": ["enhancement", "status:doing"],
+    "assignees": ["cywf"]
+  },
+  {
+    "id": "3",
+    "title": "Fix TLE parsing edge case",
+    "status": "doing",
+    "url": "https://github.com/cywf/tle-fetcher/issues/3",
+    "labels": ["bug", "status:doing"],
+    "assignees": ["contributor1"]
+  },
+  {
+    "id": "4",
+    "title": "Update documentation for new CLI flags",
+    "status": "done",
+    "url": "https://github.com/cywf/tle-fetcher/issues/4",
+    "labels": ["documentation", "status:done"],
+    "assignees": []
+  },
+  {
+    "id": "5",
+    "title": "Add unit tests for pass prediction",
+    "status": "todo",
+    "url": "https://github.com/cywf/tle-fetcher/issues/5",
+    "labels": ["testing", "status:todo"],
+    "assignees": []
+  }
+]
